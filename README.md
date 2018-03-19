@@ -13,7 +13,7 @@ Where possible, RTA attempts to perform the actual malicious activity describe. 
 
 
 ## Installation Steps
-1) Download a copy of the RTA repo from https://git.endgames.local/RnD/rta.
+1) Download a copy of the RTA repo from https://github.com/endgameinc/RTA.
 2) Extract the contents of the zip archive into an RTA folder, such as c:\RTA  
 3) For the full experience, download additional files into the bin subdirectory (as described in the dependencies section below)
 
