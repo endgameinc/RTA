@@ -1,5 +1,3 @@
-# -- INTERNAL USE ONLY --
-
 # Name: Rundll32 Loading by Ordinal
 # rta: rundll32_ordinal.py
 # ATT&CK: T1085
