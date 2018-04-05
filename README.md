@@ -57,6 +57,10 @@ None of the rules require arguments, but some can optionally take arguments for 
 # FAQ
 To help with common issues, please refer to the following frequently-asked questions:
 
+* I tried to run the scripts but I am recieving an error finding the SimpleHTTPServer module
+
+This can occur if Python 3.x is installed instead of 2.7. Note that the prerequisites specify 2.7 though we are considering a longer-term approach using 3.x.
+
 * When I run some RTA scripts, I get an error that "PsExec" can't be found
 
 To resolve errors about a missing dependency, please make sure that you've followed instructions to download third-party utilities such as the Sysinternals suite and that you've extracted these executables to the "bin" subdirectory.
