@@ -11,10 +11,10 @@ def main():
     common.log("Encoding target")
     encoded_file = os.path.abspath('encoded.txt')
     decoded_file = os.path.abspath('decoded.exe')
-    common.execute("c:\\Windows\\System32\\certutil.exe -encode c:\\windows\\system32\\cmd.exe %s" % encoded_file)
+    common.execute("c:\\Windows\\System32\\certutil.exe -encode c:\\windows\\system32\\cmd.exe \"%s\"" % encoded_file)
 
     common.log("Decoding target")
-    common.execute("c:\\Windows\\System32\\certutil.exe -decode %s %s" % (encoded_file, decoded_file))
+    common.execute("c:\\Windows\\System32\\certutil.exe -decode \"%s\" \"%s\"" % (encoded_file, decoded_file))
 
     common.log("Cleaning up")
     common.remove_file(encoded_file)
