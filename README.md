@@ -40,7 +40,14 @@ To run the `powershell_args.py` RTA, simply run:
 python powershell_args.py
 ```
 
-To run an entire directory of RTAs, you can use a loop:
+To run an entire directory of RTAs, the easiest way is to use the script-runner provided, "run_rta.py". This script-runner is capable of running every script in the "red_ttp" subdirectory and will do so by default:
+
+**All operating systems:**
+```commandline
+python run_rta.py
+```
+
+Alternatively, you can use a loop:
 
 **Windows:**
 ```commandline

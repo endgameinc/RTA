@@ -19,6 +19,10 @@ try:
 except socket.gaierror:
     LOCAL_IP = "127.0.0.1"
 
+try:
+    import _winreg as winreg
+except ImportError:
+    winreg = None
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ALL_IP = "0.0.0.0"
@@ -33,6 +37,12 @@ MISSING_DEPENDENCIES = 2
 MISSING_PSEXEC = 3
 UNSUPPORTED_RTA = 4
 ACCESS_DENIED = 5
+
+# Amount of seconds a command should take at a minimum.
+# This can allow for arbitrary slow down of scripts
+MIN_EXECUTION_TIME = 0
+
+MAX_HOSTS = 64
 
 
 def check_dependencies(*paths):
@@ -56,7 +66,7 @@ def dependencies(*paths):
             if len(missing):
                 log("Missing dependencies for %s:%s()" % (f.func_code.co_filename, f.func_code.co_name), "!")
                 for dep in missing:
-                    print("    - %s" % dep)
+                    print("    - %s" % os.path.relpath(dep, BASE_DIR))
                 return MISSING_DEPENDENCIES
             return f(*args, **kwargs)
         return decorated
@@ -84,6 +94,7 @@ def execute(command, hide_log=False, mute=False, timeout=30, wait=True, kill=Fal
         stdout = devnull
         stderr = devnull
 
+    start = time.time()
     p = subprocess.Popen(command, stdin=stdin, stdout=stdout, stderr=stderr, shell=shell)
 
     if kill:
@@ -112,6 +123,12 @@ def execute(command, hide_log=False, mute=False, timeout=30, wait=True, kill=Fal
 
         output += p.stdout.read()
         output = output.strip()
+
+        # Add artificial sleep to slow down command lines
+        end = time.time()
+        run_time = end - start
+        if run_time < MIN_EXECUTION_TIME:
+            time.sleep(MIN_EXECUTION_TIME - run_time)
 
         if not (hide_log or mute):
             if p.returncode != 0:
@@ -221,7 +238,6 @@ def patch_regex(source_file, regex, new_bytes, target_file=None):
 def wchar(s):
     return s.encode('utf-16le')
 
-MAX_HOSTS = 64
 
 def find_remote_host():
     log("Searching for remote Windows hosts")
@@ -311,7 +327,38 @@ def run_system(arguments=None):
         log("PsExec not found", log_type="-")
         return MISSING_PSEXEC
 
-    code, _ = execute([PS_EXEC, "-w", os.getcwd(), "-accepteula", "-s", "-i"] + arguments)
+    p = subprocess.Popen([PS_EXEC, "-w", os.getcwd(), "-accepteula", "-s"] + arguments)
+    p.wait()
+    code = p.returncode
     if code == 5:
         log("Failed to escalate to SYSTEM", "!")
     return code
+
+def write_reg_string(hive, key, value, data, delete=True):
+    # type: (long, str, str, str, bool) -> None
+    hkey = winreg.CreateKey(hive, key)
+    key = key.rstrip('\\')
+    log("Writing to registry %s\\%s -> %s" % (key, value, data))
+    winreg.SetValueEx(hkey, value, 0, winreg.REG_SZ, data)
+    stored, code = winreg.QueryValueEx(hkey, value)
+    if data != stored:
+        log("Wrote %s but retrieved %s" % (data, stored), log_type="-")
+
+    if delete:
+        time.sleep(0.5)
+        log("Removing %s\\%s" % (key, value), log_type="-")
+        winreg.DeleteValue(hkey, value)
+
+    hkey.Close()
+
+
+def print_file(path):
+    print(path)
+    if not os.path.exists(path):
+        print('--- NOT FOUND ----')
+    else:
+        print('-' * 16)
+        with open(path, 'rb') as f:
+            print(f.read().rstrip())
+
+    print('')
